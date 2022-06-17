@@ -5,23 +5,23 @@ This repository is for devleopment and containment of the echo-lvh-project under
 
 **2 Contents**
 
-Installation.....................................................................................................................................................3
-Directory Structure..............................................................................................................................................3
-Training.........................................................................................................................................................4
-Testing .........................................................................................................................................................5
-Demo.............................................................................................................................................................5
+Installation..................................................................................................................................................3
+Directory Structure...........................................................................................................................................3
+Training......................................................................................................................................................4
+Testing ......................................................................................................................................................5
+Demo..........................................................................................................................................................5
 
 **3 Installation**
 
 This repo can be obtained by directly cloning the existing git repository. Create a directory in
 which to store the downloaded package and run:
 
-# git clone https://github.com/jamessli/ECHO_LVH_PACKAGE/ my_directory
+	# git clone https://github.com/jamessli/ECHO_LVH_PACKAGE/ my_directory
 
 In the package directory, locate the requirements.txt file. This contains all of the necessary
 dependencies utilized by the package. Install everything by running:
 
-# pip install -r requirements.txt
+	# pip install -r requirements.txt
 
 Directory Structure
 
@@ -56,7 +56,7 @@ automatically.
 Training the models on the given training and test data sets can be done with a single command as
 follows:
 
-  #python main.py --train my_dir --device my_device
+	#python main.py --train my_dir --device my_device
 
 In this case, my_dir represents the directory containing the studies as outlined in the previous section
 my_device is the name of any inference device/devices in the server in the form GPU:0, CPU:0…
@@ -67,23 +67,23 @@ In addition to training with the default commands as show, the package can also 
 hyperparameters.txt file that contains hyperparameter values that overwrites the native ones provided in
 the script. This file is of the format:
 
-batch_size = int
-epochs = int
-weight_decay = float
-learnable_layers = float
-learning_rate = float
-learning_rate_decay = int
-dropout_rate = float
+	batch_size = int
+	epochs = int
+	weight_decay = float
+	learnable_layers = float
+	learning_rate = float
+	learning_rate_decay = int
+	dropout_rate = float
 
 Where:
 
-batch_size - the batch size
-epochs - the number of epochs of training
-weight decay - the severity of l2 regularization
-learnable_layers - the number of layers with tunable weights
-learning_rate - the initial learning rate of the optimizer
-learning_rate_decay – the number of epochs until the learning rate is halved
-dropout_rate – the severity of dropout chance after each layer.
+	batch_size - the batch size
+	epochs - the number of epochs of training
+	weight decay - the severity of l2 regularization
+	learnable_layers - the number of layers with tunable weights
+	learning_rate - the initial learning rate of the optimizer
+	learning_rate_decay – the number of epochs until the learning rate is halved
+	dropout_rate – the severity of dropout chance after each layer.
 
 **5 Testing**
 
@@ -104,6 +104,6 @@ Demo
 A visual demonstration is available through streamlit that shows the inferencing and video generation in
 real time on a single case study. This can be done through the following command.
 
-  # streamlit run video_demo.py
+	# streamlit run video_demo.py
   
-At the top, enter the path to the case study and select the inference device from the drop-down menu.
+At the top text box, enter the path to the case study and select the inference device from the drop-down menu.
