@@ -36,6 +36,11 @@ def get_image_array(image_path, image_size):
 
     return array
 
+def av_vote(array):
+
+    column = array.mean(axis = 0)
+    return column.reshape(1,-1)
+
 
 # In[121]:
 
@@ -88,7 +93,7 @@ def save_and_display_gradcam(image_path, study_name, view, heatmap, saved_name, 
 
     superimposed = jet_heatmap * alpha + image_array
 
-    cv2.putText(img = superimposed, text = prediction_string, org = (image_array.shape[1]//5, image_array.shape[0]//5), fontFace = cv2.FONT_HERSHEY_TRIPLEX, fontScale = .6, color = (255,0,0), thickness= 1)
+    cv2.putText(img = superimposed, text = prediction_string, org = (image_array.shape[1]//5, image_array.shape[0]//5), fontFace = cv2.FONT_HERSHEY_TRIPLEX, fontScale = (float(image_array.shape[1]/625))/2, color = (255,0,0), thickness= 1)
 
     superimposed = keras.preprocessing.image.array_to_img(superimposed)
 
@@ -98,6 +103,12 @@ def save_and_display_gradcam(image_path, study_name, view, heatmap, saved_name, 
 
 # In[148]:
 def load_study(study_name, view, model, overlay_model, fps):
+
+    study_name = study_name.replace("/", "")
+    
+    if view == "Empty":
+
+        return [-1, -1, -1]
 
     raw_frames_path = "{0}/{1}_raw_frames".format(output_path, study_name)
     vid_frames_path = "{0}/{1}_vid_frames".format(output_path, study_name)
@@ -163,17 +174,22 @@ def load_study(study_name, view, model, overlay_model, fps):
 
         for img in raw_files[study]:
 
-            prediction = model.predict(img)
+            prediction = model.predict(img)[0]
             prediction_argmax = numpy.argmax(prediction)
 
             predictions.append(prediction)
             predictions_argmax.append(prediction_argmax)
 
             heatmap = make_heatmap(img, overlay_model, last_conv_layer)
+            
 
             try:
+                
+                p_AMY = str(round(prediction[0], 3))
+                p_HCM = str(round(prediction[1], 3))
+                p_HTN = str(round(prediction[2], 3))
 
-                prediction_string = "AMY: {0}  HCM: {1}  HTN: {2}  ".format(prediction[0][0].round(3), prediction[0][1].round(3), prediction[0][2].round(3))
+                prediction_string = "AMY: {0}  HCM: {1}  HTN: {2}  ".format(p_AMY, p_HCM, p_HTN)
 
             except:
 
@@ -191,12 +207,17 @@ def load_study(study_name, view, model, overlay_model, fps):
             save_and_display_gradcam(vid_files[study_name][counter], study_name, view, heatmap, save_file_name, prediction_string)
 
             counter += 1
-        '''
-        probabilities = pandas.DataFrame(numpy.asarray(predictions), columns = ['HTN','HCM','Amyloidosis'])
-        probabilities_argmax = pandas.DataFrame(numpy.asarray(predictions_argmax), columns = ['HTN','HCM','Amyloidosis'])
-        probabilities.to_csv("{0}/{2}_probabilities.csv".format(dataframe_output_path, view))
-        probabilities_argmax.to_csv("{0}/{2}_argmax.csv".format(dataframe_output_path, view))
-        '''
+
+        predictions = numpy.asarray(predictions)
+        predictions_argmax = numpy.asarray(predictions_argmax)
+        probabilities = pandas.DataFrame(predictions, columns = ['HTN','HCM','Amyloidosis'])
+        probabilities_argmax = pandas.DataFrame(predictions_argmax, columns = ['Label'])
+
+        probabilities.to_csv("{0}/{1}_probabilities.csv".format(dataframe_output_path, view))
+        probabilities_argmax.to_csv("{0}/{1}_argmax.csv".format(dataframe_output_path, view))
+
+        video_prediction = av_vote(predictions)
+
     for study in raw_files:
 
         to_vid = list(Path(overlay_output_path).glob('**/*.png'))
@@ -223,10 +244,15 @@ def load_study(study_name, view, model, overlay_model, fps):
             size = (width, height)
             img_arr.append(file)
 
-        out = cv2.VideoWriter(video_path + "/{0}/{1}_{2}.mp4".format(study_name, study_name, view), cv2.VideoWriter_fourcc(*'H264'),fps, size)
+        out = video_path + "/{0}/".format(study_name)
+
+        Path(out).mkdir(parents=True, exist_ok=True)
+        out = cv2.VideoWriter(out + "/{1}_{2}.mp4".format(study_name, study_name, view), cv2.VideoWriter_fourcc(*'H264'),fps, size)
 
         for i in range(len(img_arr)):
 
             out.write(img_arr[i])
 
         out.release()
+    
+    return video_prediction

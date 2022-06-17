@@ -38,11 +38,11 @@ def split_into_frames(video_path, view_output_path):
 
     while ret is True:
         
-        #COLOR CORRECTION STARTS HERE
-        
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame_hsv = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
 
+        #COLOR CORRECTION STARTS HERE
+        '''
         if frame.shape[1] <= 640:
 
             kernel = numpy.ones((2,1),numpy.uint8)
@@ -81,15 +81,17 @@ def split_into_frames(video_path, view_output_path):
         frame_colour_corrected = Image.fromarray(frame_colour_corrected)
         frame_inpainted = cv2.inpaint(frame, mask_composite, 3, cv2.INPAINT_TELEA)
 
+        frame = Image.fromarray(frame_inpainted).convert('L')
+        '''
         #COLOR CORRECTION ENDS HERE
 
-        frame = Image.fromarray(frame_inpainted).convert('L')
+        frame = Image.fromarray(frame).convert('L')
         frame = numpy.array(frame)
         #Added
         #frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         #Added
         blurred = cv2.GaussianBlur(frame, (7, 7), 0)
-        ret2, threshhold = cv2.threshold(blurred, 45, 255, 0)
+        ret2, threshhold = cv2.threshold(blurred, 30, 255, 0)
         #ret3,threshhold = cv2.threshold(blurred,0,255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
         #threshhold = cv2.adaptiveThreshold(blurred,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,11,2)
 
