@@ -1,17 +1,18 @@
 # ECHO_LVH_PACKAGE
 This repository is for devleopment and containment of the echo-lvh-project under Mayo Clinic.
+**
+QuickStart Guide: Echo LVH Pipeline****
 
-**1 QuickStart Guide: Echo LVH Pipeline**
+**1 Contents**
+	
+	1. Contents
+	2. Installation
+	3. Directory Structure
+	4. Training
+	5. Testing
+	6. Demo
 
-**2 Contents**
-
-Installation..................................................................................................................................................3
-Directory Structure...........................................................................................................................................3
-Training......................................................................................................................................................4
-Testing ......................................................................................................................................................5
-Demo..........................................................................................................................................................5
-
-**3 Installation**
+**2 Installation**
 
 This repo can be obtained by directly cloning the existing git repository. Create a directory in
 which to store the downloaded package and run:
@@ -23,29 +24,29 @@ dependencies utilized by the package. Install everything by running:
 
 	# pip install -r requirements.txt
 
-Directory Structure
+**3 Directory Structure**
 
 The package will enable users to designate the directory(s) in which the input data and output data will be
 read from and written to respectively. The input data must be in the form of video files contained within a
 set directory hierarchy.
 Set up the directory by creating a directory and within, set up a structure as follows:
 
-my_directory/
-  studies/
-    test/
-      Amyloidosis/
-      HCM/
-      HTN/
-  train/
-      Amyloidosis/
-      HCM/
-      HTN/
+	my_directory/
+		studies/
+			test/
+			      Amyloidosis/
+			      HCM/
+			      HTN/
+	  train/
+		Amyloidosis/
+		HCM/
+		HTN/
       
 Within the individual disease labeled directories in the training directory, upload all of the training files in
 the form of:
 
-study_name/
-  video.mp4
+	study_name/
+		video.mp4
 
 These videos within the training data set will be automatically processed into a training/validation set split
 at approximately 85:15 percentage. While initially, 15% of the total studies will be relocated to the test set
@@ -100,7 +101,8 @@ To run inference on only the test study that is uploaded without running the tra
 
 	#python main.py --test my_dir --device my_device –notrain yes
 
-Demo
+**6 Demo**
+
 A visual demonstration is available through streamlit that shows the inferencing and video generation in
 real time on a single case study. This can be done through the following command.
 
