@@ -1,55 +1,19 @@
-import logging
+import warnings
+warnings.filterwarnings("ignore")
 import pandas
 from pathlib import Path
-import os
-import cv2
-import random
 import numpy as np
-import SimpleITK as sitk
-import matplotlib.pyplot as plt
 import pickle
 #Tensorflow
 import tensorflow
-import tensorflow.keras.backend as be
-from tensorflow.keras import regularizers
-from tensorflow.keras import optimizers
-from tensorflow.keras import models
-from tensorflow.keras import layers
-from tensorflow.keras.callbacks import Callback
-from tensorflow.keras.callbacks import ReduceLROnPlateau
-from tensorflow.keras.callbacks import ModelCheckpoint
-from tensorflow.keras import applications
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
-import scipy.stats as st
 
-#Fusion Models
-#Using image data generator, the classes are in the order they appear in the files, but when passed to model, are shuffled. Hence, shuffle needs to be false for the test data set
-from sklearn import svm
-from sklearn.datasets import make_classification
-from sklearn import multiclass
-from sklearn.linear_model import LogisticRegression
-from sklearn import metrics
-
-from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc
-import itertools
-from sklearn.metrics import roc_auc_score
-from sklearn.multiclass import OneVsRestClassifier
-from tensorflow.keras.applications.resnet50 import preprocess_input
-from tensorflow.keras.regularizers import L1L2
-from itertools import cycle
+from sklearn.metrics import confusion_matrix, classification_report
 from roc_utils import *
-
-#The EfficientnetB5 (Great for resolutions around 456 by 456, maybe switch to b7 depending on performance) B4 gives 380 by 380
-from tensorflow.keras.applications import InceptionResNetV2
 
 from skimage import transform
 from PIL import Image
 import PIL
-from natsort import natsorted
 from sklearn.metrics import classification_report
-import matplotlib as mpl
-import matplotlib.patheffects as pe
-import matplotlib.pyplot as pyplot
 import numpy as numpy
 
 def generate_ablated(test_path, ablations, models, dataframes, devices):

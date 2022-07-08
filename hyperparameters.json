@@ -1,0 +1,9 @@
+{
+    "batch_size": 32,
+    "epochs": 30,
+    "weight_decay": 0.3,
+    "learnable_layers": 0.5,
+    "learning_rate": 0.0005,
+    "learning_rate_decay": 0.5,
+    "dropout_rate": 0.4
+}

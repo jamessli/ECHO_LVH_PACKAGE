@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+import warnings
+warnings.filterwarnings("ignore")
 import cv2
 import glob
 import numpy
@@ -10,9 +11,8 @@ from pathlib import Path
 
 from torch import threshold
 
-def split_video(video_path, vid_output_path):
+def split_video(video_path, study_name, vid_output_path):
 
-    file_name = str(Path(video_path).name)
     video = cv2.VideoCapture(video_path)
     fps = video.get(cv2.CAP_PROP_FPS)
 
@@ -21,7 +21,7 @@ def split_video(video_path, vid_output_path):
 
     while ret is True:
 
-        cv2.imwrite("{0}/{1}_{2}.png".format(vid_output_path, file_name, count), frame)
+        cv2.imwrite("{0}/{1}_{2}.png".format(vid_output_path, study_name, count), frame)
         ret,frame = video.read()
         
         count += 1
@@ -32,6 +32,7 @@ def split_into_frames(video_path, view_output_path):
 
     file_name = str(Path(video_path).name)
     video = cv2.VideoCapture(video_path)
+    fps = video.get(cv2.CAP_PROP_FPS)
 
     ret,frame = video.read()
     count = 0
@@ -41,8 +42,9 @@ def split_into_frames(video_path, view_output_path):
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame_hsv = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
 
-        #COLOR CORRECTION STARTS HERE
         '''
+        #COLOR CORRECTION STARTS HERE
+
         if frame.shape[1] <= 640:
 
             kernel = numpy.ones((2,1),numpy.uint8)
@@ -82,8 +84,9 @@ def split_into_frames(video_path, view_output_path):
         frame_inpainted = cv2.inpaint(frame, mask_composite, 3, cv2.INPAINT_TELEA)
 
         frame = Image.fromarray(frame_inpainted).convert('L')
-        '''
+
         #COLOR CORRECTION ENDS HERE
+        '''
 
         frame = Image.fromarray(frame).convert('L')
         frame = numpy.array(frame)
@@ -122,24 +125,42 @@ def split_into_frames(video_path, view_output_path):
         frame_output = Image.fromarray(frame_output)
         frame_output = frame_output.resize((299, 299))
 
+        #Inference if needed
+
+
         frame_output.save("{0}/{1}_{2}.png".format(view_output_path, file_name, count)) #<--Add to array and save array
 
         ret,frame = video.read()
         
         count += 1
 
+
 #Cycle through video directory list
 
-def list_cycler(video_path, study_name, disease_name, view_name, output_path, operation):
+def list_cycler(video_path, study_name, disease_name, view_name, output_path):
 
     #directory_path = Path("{0}/{1}/{2}".format(study_path, disease_name, study_name))
-    output_path = "{0}/{1}/{2}/{3}".format(output_path, disease_name, study_name, view_name)
-    original_output_path = "{0}/{1}/{2}/{3}".format('./temp/video_frames', disease_name, study_name, view_name)
+
+    if disease_name == "test":
+
+        output_path = output_path
+
+    else:
+
+        output_path = "{0}/{1}/{2}/{3}".format(output_path, disease_name, study_name, view_name)
 
     Path.mkdir(Path(output_path), parents=True, exist_ok=True)
-    Path.mkdir(Path(original_output_path), parents=True, exist_ok=True)
     
     split_into_frames(video_path, output_path)
-    fps = split_video(video_path, original_output_path)
 
-    return view_name, fps
+    return view_name
+
+def study_splitter(video, study_name, output_path):
+
+    if not Path(output_path).is_dir():
+        
+        Path.mkdir(Path(output_path), parents=True, exist_ok=False)
+
+    return split_video(video, study_name, output_path)
+
+    

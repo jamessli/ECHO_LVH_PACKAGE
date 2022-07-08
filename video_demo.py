@@ -1,29 +1,47 @@
+from msilib.schema import Directory
 from isort import file
 import streamlit as st
 import pandas as pandas
 from IPython.display import display
 from pathlib import Path
 from urllib.error import URLError
-import time
-import sys
 import echo_video_processor
 import overlay_generator
 import tensorflow as tensorflow
 import numpy as numpy
 from tensorflow import keras
 import pickle
-import time
+import argparse
+
+parser = argparse.ArgumentParser(description="Set directory for demo")
+parser.add_argument('--dir', help='Set home directory')
+parser.add_argument('--device', help='Set inference devices')
+args = parser.parse_args()
+
+physical_devices = tensorflow.config.list_physical_devices()
+
+for i,_ in enumerate(physical_devices):
+
+        physical_devices[i] = str(physical_devices[i]).split('/physical_device:')[-1].split(",")[0].replace("\'", '')
+
+if args.device and args.device[0] == "list":
+
+    print("Selectable Devices: ", physical_devices)
+
+else:
+
+    inference_device = args.device
 
 
 try:
     
-    main_path = r'./study/'
-    model_path = r'./models/'
+    directory = st.text_input("Enter File Path", value="", max_chars=None, key=None, type="default", help=None, autocomplete=None, on_change=None, args=None, kwargs=None, placeholder=None, disabled=False)
+    study_name = directory.split('/')[-1]
+    file_path = directory.rsplit('/', 3)[0]
+    model_path = file_path + '/models/'
+    output_path = file_path + '/temp/overlays/'
+    video_path = file_path + '/videos'
 
-    #st.set_page_config(layout="wide")
-
-    study_name = st.text_input("Enter File Path", value="", max_chars=None, key=None, type="default", help=None, autocomplete=None, on_change=None, args=None, kwargs=None, placeholder=None, disabled=False)
-    file_path = main_path + '/' + study_name
     disease_map = {0: "Amyloidosis", 1: "HCM", 2: "HTN"}
 
     physical_devices = tensorflow.config.list_physical_devices()
@@ -109,7 +127,7 @@ try:
 
                             views.insert(i, "Empty")
 
-                        predictions = overlay_generator.load_study(study_name, views[i], model_dict[view], AP2_model, fps)
+                        predictions = overlay_generator.load_study(study_name, views[i], model_dict[view], AP2_model, fps, output_path, video_path)
 
                         for prediction in predictions:
 

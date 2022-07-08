@@ -1,22 +1,13 @@
 from pathlib import Path
-
+import warnings
+warnings.filterwarnings("ignore")
 #Tensorflow
 import tensorflow
 from tensorflow.keras import regularizers
 from tensorflow.keras import layers
 from tensorflow.keras.callbacks import ReduceLROnPlateau
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-
-#Fusion Models
-#Using image data generator, the classes are in the order they appear in the files, but when passed to model, are shuffled. Hence, shuffle needs to be false for the test data set
-
-from sklearn.metrics import confusion_matrix, classification_report
-from roc_utils import *
-import logging
-
-
-#The EfficientnetB5 (Great for resolutions around 456 by 456, maybe switch to b7 depending on performance) B4 gives 380 by 380
-from tensorflow.keras.applications import InceptionResNetV2
+import json
 
 def train_views(training_path, validation_path, output_path, devices):
 
@@ -27,47 +18,22 @@ def train_views(training_path, validation_path, output_path, devices):
     model_path = output_path
 
     batch_size = 32 #4Gpus, 64 batches each?
-    epochs = 25
     image_size = 299
-    weight_decay = .3
-    learnable_layers = .5
-    learning_rate = ".0005"
-    learning_rate_decay = .5
 
-    if Path('./hyperparameters.txt').is_file():
+    with open('./hyperparameters.json') as in_file:
 
-        with open('./hyperparameters.txt') as in_file:
-
-            lines = in_file.readlines()
-
-            for line in lines:
-
-                if line == "batch_size":
-
-                    batch_size = int(line.split('=')[-1])
-
-                if line == "epochs":
-
-                    epochs = int(line.split('=')[-1])
-
-                if line == "weight_decay":
-
-                    weight_decay = float(line.split('=')[-1])
-
-                if line == "learnable_layers":
-
-                    learnable_layers = float(line.split('=')[-1])
-
-                if line == "learning_rate":
-
-                    learning_rate = float(line.split('=')[-1])
-
-                if line == "learning_rate_decay":
-
-                    learning_rate_decay = float(line.split('=')[-1])
+        hyperparameters = json.load(in_file)
+        batch_size = hyperparameters['batch_size']
+        epochs = hyperparameters['epochs']
+        weight_decay = hyperparameters['weight_decay']
+        learnable_layers = hyperparameters['learnable_layers']
+        learning_rate = hyperparameters['learning_rate']
+        learning_rate_decay = hyperparameters['learning_rate_decay']
+        dropout_rate = hyperparameters['dropout_rate']
 
 
     training_data_generator = ImageDataGenerator(rescale = 1.0/255.0, rotation_range = 45, width_shift_range = .5, height_shift_range = .15, horizontal_flip = False, fill_mode = 'nearest') #Rescale images to 0 to .255
+    validation_data_generator = ImageDataGenerator(rescale = 1.0/255.0)
 
     with mirrored_strategy.scope():
 
@@ -82,11 +48,13 @@ def train_views(training_path, validation_path, output_path, devices):
 
     for view,model in zip(['AP2', 'AP3', 'AP4', 'PSAX_V', 'PSAX_M', 'PLAX'], model_list):
 
+        print("Beginning training for view: ", view)
+
         training_data_gen = training_data_generator.flow_from_directory(str(training_path_views + '/{0}/'.format(view)),  shuffle = True, target_size = (image_size,image_size), batch_size = batch_size, color_mode = 'rgb', class_mode = "categorical")
         train_len = len(training_data_gen.classes)
         print(view, " training data processed slices: ", training_data_gen.class_indices)
 
-        validation_data_gen = training_data_generator.flow_from_directory(str(validation_path_views + '/{0}/'.format(view)),  shuffle = True, target_size = (image_size,image_size), batch_size = batch_size, color_mode = 'rgb', class_mode = "categorical")
+        validation_data_gen = validation_data_generator.flow_from_directory(str(validation_path_views + '/{0}/'.format(view)),  shuffle = True, target_size = (image_size,image_size), batch_size = batch_size, color_mode = 'rgb', class_mode = "categorical")
         val_len = len(validation_data_gen.classes)
         print(view, "validation data processed slices: ", validation_data_gen.class_indices)
 
