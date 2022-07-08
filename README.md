@@ -97,9 +97,7 @@ To test this option with ablation, wherein the program will cycle between the vi
 
 	#python main.py --test my_dir --device my_device –ablate yes
   
-To run inference on only the test study that is uploaded without running the training step, add an affirmative “notrain” flag. This will download all models from the internet and run the model on the study contained within the test directory:
-
-	#python main.py --test my_dir --device my_device –notrain yes
+When running inferencing without having previously performed training, the program will automatically download the missing files from the network and will place them into the models directory.
 
 **6 Demo**
 
