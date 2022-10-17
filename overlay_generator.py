@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import warnings
+from matplotlib import pyplot
 warnings.filterwarnings("ignore")
 
 import tensorflow as tensorflow
@@ -12,7 +13,8 @@ import cv2
 from natsort import natsorted
 import pandas
 from pathlib import Path
-
+import os
+from PIL import Image
 
 image_size = (299, 299)
 last_conv_layer = "conv_7b"
@@ -91,16 +93,18 @@ def save_and_display_gradcam(image_path, study_name, view, heatmap, saved_name, 
 
     if not Path("{0}/{1}/{2}".format(output_path,study_name, view)).is_dir():
 
+        print("Creating new directory: ", Path("{0}/{1}/{2}".format(output_path,study_name, view)))
         Path.mkdir(Path("{0}/{1}/{2}".format(output_path,study_name, view)), parents=True, exist_ok=False)
 
     save_path = "{0}/{1}/{2}/{3}".format(output_path,study_name, view, saved_name)
+
+    print("Saving {0} to: ".format(saved_name), save_path)
     superimposed.save(save_path)
-
-
 
 def load_study(study_name, view, model, overlay_model, fps, output_path, video_path):
 
     study_name = study_name.replace("/", "")
+    study_name = study_name.replace("\\", "")
     
     if view == "Empty":
 
@@ -126,8 +130,8 @@ def load_study(study_name, view, model, overlay_model, fps, output_path, video_p
     for image_ in image_list:
 
         img = str(image_)
-        dir = img.rsplit("/", 1)[0]
-        temp.append(img.split("/")[-1])
+        dir = img.rsplit(os.sep, 1)[0]
+        temp.append(img.split(os.sep)[-1])
 
     temp = natsorted(temp) 
 
@@ -141,6 +145,7 @@ def load_study(study_name, view, model, overlay_model, fps, output_path, video_p
 
     for img_path in image_list:
 
+
         temp.append(get_image_array(img_path, image_size = image_size))
 
     raw_files[study_name] = temp #Sort the processed_files
@@ -150,8 +155,8 @@ def load_study(study_name, view, model, overlay_model, fps, output_path, video_p
     for image_ in video_list:
 
         img = str(image_)
-        dir = img.rsplit("/", 1)[0]
-        temp.append(img.split("/")[-1])
+        dir = img.rsplit(os.sep, 1)[0]
+        temp.append(img.split(os.sep)[-1])
 
     temp = natsorted(temp)
 
@@ -223,8 +228,8 @@ def load_study(study_name, view, model, overlay_model, fps, output_path, video_p
         for image_ in to_vid:
 
             img = str(image_)
-            dir = img.rsplit("/", 1)[0]
-            temp.append(img.split("/")[-1])
+            dir = img.rsplit(os.sep, 1)[0]
+            temp.append(img.split(os.sep)[-1])
 
         temp = natsorted(temp)
 
@@ -277,8 +282,8 @@ def load_video(raw_path, processed_path, overlay_output_path, video_output_path,
     for image_ in image_list:
 
         img = str(image_)
-        dir = img.rsplit("/", 1)[0]
-        temp.append(img.split("/")[-1])
+        dir = img.rsplit(os.sep, 1)[0]
+        temp.append(img.split(os.sep)[-1])
 
     temp = natsorted(temp) 
 
@@ -301,8 +306,8 @@ def load_video(raw_path, processed_path, overlay_output_path, video_output_path,
     for image_ in video_list:
 
         img = str(image_)
-        dir = img.rsplit("/", 1)[0]
-        temp.append(img.split("/")[-1])
+        dir = img.rsplit(os.sep, 1)[0]
+        temp.append(img.split(os.sep)[-1])
 
     temp = natsorted(temp)
 
@@ -323,8 +328,17 @@ def load_video(raw_path, processed_path, overlay_output_path, video_output_path,
 
         for img in raw_files[study]:
 
+            '''Print Image
+            print(img[0].shape)
+            toshow = keras.preprocessing.image.array_to_img(img[0])
+            toshow.show()
+            '''
+
             prediction = model.predict(img)[0]
+            print(prediction)
             prediction_argmax = numpy.argmax(prediction)
+
+            print(prediction, prediction_argmax)
 
             predictions.append(prediction)
             predictions_argmax.append(prediction_argmax)
@@ -352,6 +366,7 @@ def load_video(raw_path, processed_path, overlay_output_path, video_output_path,
                         heatmap[j][k] = 0
             
             save_file_name = "{0}_".format(study_name) + str(counter) + ".png"
+ 
             save_and_display_gradcam(vid_files[study_name][counter], study_name, view_name, heatmap, save_file_name, prediction_string, overlay_output_path)
 
             counter += 1
@@ -367,6 +382,8 @@ def load_video(raw_path, processed_path, overlay_output_path, video_output_path,
         probabilities.to_csv("{0}/{1}_probabilities.csv".format(dataframe_output_path, view_name))
         probabilities_argmax.to_csv("{0}/{1}_argmax.csv".format(dataframe_output_path, view_name))
 
+        print("Storing {0}_argmax.csv to".format(view_name), dataframe_output_path)
+
         video_prediction = av_vote(predictions)
 
     print("Compiling video")
@@ -380,8 +397,8 @@ def load_video(raw_path, processed_path, overlay_output_path, video_output_path,
         for image_ in to_vid:
 
             img = str(image_)
-            dir = img.rsplit("/", 1)[0]
-            temp.append(img.split("/")[-1])
+            dir = img.rsplit(os.sep, 1)[0]
+            temp.append(img.split(os.sep)[-1])
 
         temp = natsorted(temp)
 

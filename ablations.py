@@ -4,6 +4,7 @@ import pandas
 from pathlib import Path
 import numpy as np
 import pickle
+import os
 #Tensorflow
 import tensorflow
 
@@ -16,7 +17,8 @@ import PIL
 from sklearn.metrics import classification_report
 import numpy as numpy
 
-def generate_ablated(test_path, ablations, models, dataframes, devices):
+#Utilizing Jason's ablation function
+def generate_ablated(test_path, ablations, models, dataframes, output, devices):
 
     #Functions___________________________________________________________________________________________________________________________________
     def image_load(filename):
@@ -29,14 +31,7 @@ def generate_ablated(test_path, ablations, models, dataframes, devices):
         return np_image
 
     def ablate_cardiac_echo(frame_center, quadrant=None):
-        """
-        code to remove different quadrants of the cardiac ultrasound frames
-        input:
-            frame_crop: the raw ultrasound array to crop a quadrant from
-            quadrant: option to remove a quadrant of the image for ablation study
-        output:
-            frame_crop: segmented cardiac ultrasound (w/w0 quadrant ablation)
-        """
+
         frame_crop = frame_center.copy()
         if quadrant != None:
             frame_center_h = int(frame_crop.shape[0] * 0.6)
@@ -93,16 +88,16 @@ def generate_ablated(test_path, ablations, models, dataframes, devices):
     #Create_and_Save_Ablated_images______________________________________________________________________________________________________________
     for study in Path(image_path).iterdir():
 
-        study_name = str(study).split('/')[-1]
+        study_name = str(study).split(os.sep)[-1]
 
         for disease in study.iterdir():
 
-            disease_name = str(disease).split('/')[-1]
+            disease_name = str(disease).split(os.sep)[-1]
 
             for view in disease.iterdir():
 
                 path = str(view)
-                view_name = path.split('/')[-1]
+                view_name = path.split(os.sep)[-1]
     
                 image_files = list(view.glob("*.png") )
 
@@ -114,7 +109,7 @@ def generate_ablated(test_path, ablations, models, dataframes, devices):
                     for img_path in image_files:
 
                         image = str(img_path)
-                        image_name = image.split('/')[-1]
+                        image_name = image.split(os.sep)[-1]
 
                         img = Image.open(image)
                         img = img.convert('RGB')
@@ -148,7 +143,7 @@ def generate_ablated(test_path, ablations, models, dataframes, devices):
 
         for disease in Path(ablation_path).iterdir():
 
-            label = disease_map[str(disease).rsplit('/',1)[1]]
+            label = disease_map[str(disease).rsplit(os.sep,1)[1]]
 
             for study in disease.iterdir():
 
@@ -156,7 +151,7 @@ def generate_ablated(test_path, ablations, models, dataframes, devices):
 
                 for ablation in study.joinpath('AP4').iterdir():
 
-                    quadrant = str(ablation).rsplit('/', 1)[-1]
+                    quadrant = str(ablation).rsplit(os.sep, 1)[-1]
 
                     if quadrant not in quadrants:
 

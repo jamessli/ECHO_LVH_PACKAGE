@@ -20,7 +20,7 @@ import overlay_generator
 import test_set
 import downloader
 import math
-
+import os
 
 model_path = r'/models'
 study_path_training = r'/studies/training'
@@ -65,7 +65,7 @@ def main():
 
     else:
 
-        inference_device = args.device
+        inference_device = list(args.device.split(' '))
 
         if args.prepare:
 
@@ -79,7 +79,7 @@ def main():
 
             if args.download:
 
-                print("Download status: ", downloader.download(args.prepare))
+                print("Download status: ", downloader.downloader(args.prepare))
 
         elif args.train:
             
@@ -89,7 +89,7 @@ def main():
                     
                     #Get Study, Disease, and View
                     print("Beginning Training on Device: ", inference_device)
-                    print(process_study("training", args.train))
+                    print(process_study("training", args.train, inference_device))
                     print("Performing generic model training. This may take a while...")
                     print(perform_training(args.train, inference_device))
                     print("Performing view-wide model training. This may take a while...")
@@ -175,21 +175,21 @@ def process_study(operation, directory, inference_device):
  
         for disease in Path(study_path).iterdir():
 
-            disease_name = str(disease).split('/')[-1]
+            disease_name = str(disease).split(os.sep)[-1]
             
             for study in disease.iterdir():
                 
-                study_name = str(study).split('/')[-1]
+                study_name = str(study).split(os.sep)[-1]
                 videos = list(study.glob("*.avi")) + list(study.glob("*.mp4"))
                 
                 
-                if current_count%4 < 2: #Use mod 10 < 7 and mod 10< 9 for actual
+                if current_count%100 < 72: #Use mod 10 < 7 and mod 10< 9 for actual
 
                     output_path = train_path
                     img_output_path = directory + generic_training_path
                     view_output_path = directory + view_training_path
 
-                elif current_count%4 < 3:
+                elif current_count%100 < 90:
 
                     output_path = val_path
                     img_output_path = directory + generic_validation_path
@@ -205,7 +205,7 @@ def process_study(operation, directory, inference_device):
 
                     for view in views:
 
-                        if view in str(video).split('/')[-1]:
+                        if view in str(video).split(os.sep)[-1]:
 
                             view_name = view
 
@@ -231,10 +231,10 @@ def process_study(operation, directory, inference_device):
 
                     for file in list(Path("{0}/{1}/{2}/{3}".format(output_path, disease_name, study_name, view_name)).glob('*.png')):
 
-                        filename = str(file).split('/')[-1]
+                        filename = str(file).split(os.sep)[-1]
 
-                        shutil.copyfile(file, "{0}/{1}/{2}/{3}".format(view_output_path, view_name, disease_name, filename))
-                        shutil.copyfile(file, "{0}/{1}/{2}".format(img_output_path, disease_name, filename))
+                        shutil.copyfile(file, Path("{0}/{1}/{2}/{3}".format(view_output_path, view_name, disease_name, filename)))
+                        shutil.copyfile(file, Path("{0}/{1}/{2}".format(img_output_path, disease_name, filename)))
 
                 print("Finished Processing: ", study_name)
                 current_count += 1
@@ -381,13 +381,55 @@ def download_models(directory):
 
 def perform_ablation(directory, devices):
 
-    ablations = directory + ablation_path
-    test_path = directory + study_test_path
-    models = directory + model_path
-    dataframes = directory + dataframe_path
+    study_path = directory + study_test_path
+    models_input_path = directory + model_path
+    ablated_path = directory + ablation_path
+    image_output_path = directory + image_path
+    dataframes_output_path = directory + dataframe_path
+    video_frames_output_path = directory + video_frame_path
 
-    return ablations.generate_ablated(test_path, ablations, models, dataframes, devices)
+    views = ["PSAX_V", "PSAX_M", "PLAX", "AP2", "AP3", "AP4", "A2", "A3", "A4"]
 
+    for study in Path(study_path).iterdir():
+        
+        study_name = str(study).split(os.sep)[-1]
+        print("Currently Processing Study: ", study_name)
+        
+        videos = list(study.glob("*.mp4")) + list(study.glob("*.avi"))
+
+        for video in videos:
+
+            for view in views:
+
+                if view in str(video).split(os.sep)[-1]:
+
+                    view_name = view
+
+                    if view_name == "A2":
+
+                        view_name = "AP2"
+
+                    elif view_name == "A3":
+
+                        view_name = "AP3"
+
+                    elif view_name == "A4":
+
+                        view_name = "AP4"
+
+                    break
+            
+            if not view_name:
+
+                return "View not supported..."
+
+            raw_path = "{0}/{1}/{2}".format(video_frames_output_path, study_name, view_name)
+            fps = echo_video_processor.study_splitter(str(video), study_name, raw_path)
+            processed_path = "{0}/{1}/{2}".format(image_output_path, study_name, view_name)
+            echo_video_processor.list_cycler(str(video), study_name, "test", view_name, processed_path)
+
+    print(study_path, ablated_path, models_input_path, dataframes_output_path, image_output_path, devices)
+    ablations.generate_ablated(study_path, ablated_path, models_input_path, dataframes_output_path, image_output_path, devices)
 if __name__ == '__main__':
 
     main()

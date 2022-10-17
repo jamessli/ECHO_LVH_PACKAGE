@@ -42,7 +42,7 @@ def split_into_frames(video_path, view_output_path):
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame_hsv = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
 
-        '''
+
         #COLOR CORRECTION STARTS HERE
 
         if frame.shape[1] <= 640:
@@ -85,10 +85,6 @@ def split_into_frames(video_path, view_output_path):
 
         frame = Image.fromarray(frame_inpainted).convert('L')
 
-        #COLOR CORRECTION ENDS HERE
-        '''
-
-        frame = Image.fromarray(frame).convert('L')
         frame = numpy.array(frame)
         #Added
         #frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -133,7 +129,6 @@ def split_into_frames(video_path, view_output_path):
         ret,frame = video.read()
         
         count += 1
-
 
 #Cycle through video directory list
 
