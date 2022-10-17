@@ -29,7 +29,8 @@ dependencies utilized by the package. Install everything by running:
 The package will enable users to designate the directory(s) in which the input data and output data will be
 read from and written to respectively. The input data must be in the form of video files contained within a
 set directory hierarchy.
-Set up the directory by creating a directory and within, set up a structure as follows:
+
+The directory structure must be formed as follows:
 
 	my_directory/
 		studies/
@@ -49,8 +50,18 @@ the form of:
 		video.mp4
 
 These videos within the training data set will be automatically processed into a training/validation set split
-at approximately 85:15 percentage. While initially, 15% of the total studies will be relocated to the test set
+at approximately 72:18 percentage. While initially, 10% of the total studies will be relocated to the test set
 automatically.
+
+In order to automate the setup process, run the following command with the target directory:
+
+	#python main.py --prepare my_dir
+	
+Furthermore, if utilizing the pre-trained models is desired, download of these models from the online repository (Linked here: https://drive.google.com/file/d/1CtV3i2rPDO9wKVEEPcIlw0cy67o7KIbb/view?usp=sharing) can be done with the following:
+
+	#python main.py --prepare my_dir --download
+	
+If the download flag is utilized during the prepare phase. The 'model' directory will be pre-populated with fully trained models.
 
 **4 Training**
 
@@ -98,6 +109,10 @@ To test this option with ablation, wherein the program will cycle between the vi
 	#python main.py --test my_dir --device my_device –ablate yes
   
 When running inferencing without having previously performed training, the program will automatically download the missing files from the network and will place them into the models directory.
+	
+Otherwise, in order to download all models from an online repo as mentioned in section 3.
+
+	#python main.py --test my_dir --device my_device –ablate yes
 
 **6 Demo**
 
